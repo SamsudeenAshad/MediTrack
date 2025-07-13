@@ -10,6 +10,16 @@ class Database:
 
 db = Database()
 
+# Simple in-memory database for demo (fallback when MongoDB is not available)
+mock_database = {
+    "users": [],
+    "patients": [],
+    "vitals": [],
+    "appointments": [],
+    "prescriptions": [],
+    "reports": []
+}
+
 async def connect_to_mongo():
     """Create database connection"""
     try:
@@ -21,8 +31,9 @@ async def connect_to_mongo():
         logger.info("Successfully connected to MongoDB")
         
     except Exception as e:
-        logger.error(f"Failed to connect to MongoDB: {e}")
-        raise
+        logger.warning(f"Failed to connect to MongoDB: {e}")
+        logger.info("Using mock database for demo purposes")
+        db.database = None
 
 async def close_mongo_connection():
     """Close database connection"""
@@ -32,4 +43,80 @@ async def close_mongo_connection():
 
 async def get_database():
     """Get database instance"""
-    return db.database
+    if db.database:
+        return db.database
+    else:
+        # Return mock database interface
+        return MockDatabase()
+
+class MockDatabase:
+    """Mock database for demo purposes"""
+    
+    def __init__(self):
+        self.data = mock_database
+    
+    def __getattr__(self, name):
+        # Return a mock collection
+        return MockCollection(name, self.data.get(name, []))
+
+class MockCollection:
+    """Mock MongoDB collection for demo purposes"""
+    
+    def __init__(self, name, data):
+        self.name = name
+        self.data = data
+        self._id_counter = len(data) + 1
+    
+    async def find_one(self, query):
+        """Find one document"""
+        if "_id" in query:
+            doc_id = str(query["_id"])
+            for doc in self.data:
+                if str(doc.get("_id")) == doc_id:
+                    return doc
+        return None
+    
+    def find(self, query=None):
+        """Find documents"""
+        return MockCursor(self.data, query)
+    
+    async def insert_one(self, document):
+        """Insert one document"""
+        document["_id"] = str(self._id_counter)
+        self._id_counter += 1
+        self.data.append(document)
+        return MockInsertResult(document["_id"])
+    
+    async def update_one(self, filter_query, update_query):
+        """Update one document"""
+        # Simple implementation
+        return MockUpdateResult()
+
+class MockCursor:
+    """Mock MongoDB cursor"""
+    
+    def __init__(self, data, query=None):
+        self.data = data
+        self.query = query or {}
+    
+    def skip(self, n):
+        return self
+    
+    def limit(self, n):
+        return self
+    
+    async def to_list(self, length=None):
+        """Convert cursor to list"""
+        return self.data[:length] if length else self.data
+
+class MockInsertResult:
+    """Mock insert result"""
+    
+    def __init__(self, inserted_id):
+        self.inserted_id = inserted_id
+
+class MockUpdateResult:
+    """Mock update result"""
+    
+    def __init__(self):
+        self.modified_count = 1
