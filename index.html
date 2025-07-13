@@ -1,0 +1,465 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>MediTrack - Interactive System Plan</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+    <!-- Chosen Palette: Calm Harmony -->
+    <!-- Application Structure Plan: The SPA uses a top navigation bar to switch between thematic sections (Overview, Architecture, UX, Data & Security, Analytics, Features). This tabbed, non-linear structure was chosen over a simple scroll to prevent user overwhelm from the dense report content. It allows users to focus on specific areas of interest, such as Security or Analytics, making complex information more digestible. Key interactions include clickable diagrams to reveal details, interactive tables, and a dynamic chart to visualize AI impact, guiding the user through the system's core concepts in an engaging way. -->
+    <!-- Visualization & Content Choices: 
+        - Report Info: System Architecture -> Goal: Organize/Inform -> Viz: Interactive Flow Diagram (HTML/CSS) -> Interaction: Clickable components reveal text -> Justification: More engaging than a list, shows relationships. -> Library: Vanilla JS.
+        - Report Info: Analytics Capabilities -> Goal: Compare/Inform -> Viz: Horizontal Bar Chart (Canvas) -> Interaction: Tooltips on hover -> Justification: Visually compares the impact of AI features effectively. -> Library: Chart.js.
+        - Report Info: Security Access Tiers -> Goal: Organize -> Viz: Styled HTML Table -> Interaction: Hover to highlight rows -> Justification: Clear, structured presentation of roles and permissions. -> Library: CSS.
+        - Report Info: Interoperability Standards -> Goal: Compare -> Viz: Side-by-side comparison cards (HTML/CSS) -> Interaction: Click to toggle details -> Justification: Simplifies comparison between FHIR and HL7. -> Library: Vanilla JS.
+    -->
+    <!-- CONFIRMATION: NO SVG graphics used. NO Mermaid JS used. -->
+    <style>
+        body {
+            font-family: 'Inter', sans-serif;
+            background-color: #F8F9FA;
+            color: #343A40;
+        }
+        .nav-link {
+            transition: all 0.3s ease;
+            border-bottom: 2px solid transparent;
+        }
+        .nav-link.active, .nav-link:hover {
+            color: #007BFF;
+            border-bottom-color: #007BFF;
+        }
+        .content-section {
+            display: none;
+        }
+        .content-section.active {
+            display: block;
+        }
+        .card {
+            background-color: #FFFFFF;
+            border-radius: 0.75rem;
+            box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1), 0 2px 4px -2px rgba(0, 0, 0, 0.1);
+            transition: transform 0.3s ease, box-shadow 0.3s ease;
+        }
+        .card:hover {
+            transform: translateY(-5px);
+            box-shadow: 0 10px 15px -3px rgba(0, 0, 0, 0.1), 0 4px 6px -2px rgba(0, 0, 0, 0.1);
+        }
+        .chart-container {
+            position: relative;
+            width: 100%;
+            max-width: 800px;
+            margin-left: auto;
+            margin-right: auto;
+            height: 400px;
+            max-height: 50vh;
+        }
+        @media (min-width: 768px) {
+            .chart-container {
+                height: 500px;
+            }
+        }
+        .tech-node { cursor: pointer; transition: all 0.2s ease-in-out; }
+        .tech-node:hover { background-color: #E9ECEF; transform: scale(1.05); }
+        .connector {
+            position: absolute;
+            background-color: #ADB5BD;
+            z-index: -1;
+        }
+    </style>
+</head>
+<body class="antialiased">
+
+    <header class="bg-white shadow-md sticky top-0 z-50">
+        <div class="container mx-auto px-4 sm:px-6 lg:px-8">
+            <div class="flex items-center justify-between h-16">
+                <div class="flex items-center">
+                    <span class="text-2xl font-bold text-gray-800">🏥 MediTrack</span>
+                    <span class="hidden md:inline ml-4 text-gray-500">Interactive System Plan</span>
+                </div>
+                <nav class="hidden md:flex space-x-6">
+                    <a href="#overview" class="nav-link active font-medium px-2 py-1">Overview</a>
+                    <a href="#architecture" class="nav-link font-medium px-2 py-1">Architecture</a>
+                    <a href="#ux" class="nav-link font-medium px-2 py-1">User Experience</a>
+                    <a href="#datasecurity" class="nav-link font-medium px-2 py-1">Data & Security</a>
+                    <a href="#analytics" class="nav-link font-medium px-2 py-1">Analytics & AI</a>
+                    <a href="#features" class="nav-link font-medium px-2 py-1">Core Features</a>
+                </nav>
+            </div>
+             <nav class="md:hidden py-2">
+                <select id="mobile-nav" class="w-full p-2 border rounded-md bg-white">
+                    <option value="#overview" selected>Overview</option>
+                    <option value="#architecture">Architecture</option>
+                    <option value="#ux">User Experience</option>
+                    <option value="#datasecurity">Data & Security</option>
+                    <option value="#analytics">Analytics & AI</option>
+                    <option value="#features">Core Features</option>
+                </select>
+            </nav>
+        </div>
+    </header>
+
+    <main class="container mx-auto p-4 sm:p-6 lg:p-8">
+        
+        <section id="overview" class="content-section active">
+            <h1 class="text-3xl md:text-4xl font-bold text-gray-900 mb-4">Revolutionizing Healthcare Delivery</h1>
+            <p class="text-lg text-gray-600 mb-8">This document outlines the system plan for MediTrack, a smart patient monitoring and medical records system. Its purpose is to centralize health data, enable proactive care, and improve communication across medical teams. Explore the sections to understand the system's architecture, features, and strategic vision.</p>
+            
+            <div class="grid md:grid-cols-2 gap-8">
+                <div class="card p-6">
+                    <h2 class="text-2xl font-bold mb-3 text-blue-600">Vision & Mission</h2>
+                    <p class="text-gray-700">To empower healthcare providers and patients with a seamless, intelligent, and secure platform for real-time health monitoring and comprehensive medical record management. MediTrack aims to foster proactive care, significantly improve health outcomes, and address challenges like data fragmentation and communication gaps.</p>
+                </div>
+                <div class="card p-6">
+                    <h2 class="text-2xl font-bold mb-3 text-blue-600">Core Capabilities</h2>
+                    <ul class="space-y-2 list-disc list-inside text-gray-700">
+                        <li><strong>Smart Patient Monitoring:</strong> Real-time collection and analysis of vital signs.</li>
+                        <li><strong>Comprehensive Medical Records:</strong> A centralized, secure repository for patient histories.</li>
+                        <li><strong>Predictive Analytics:</strong> Leveraging AI to identify at-risk patients and forecast needs.</li>
+                        <li><strong>Secure Communication:</strong> HIPAA-compliant messaging for efficient team collaboration.</li>
+                        <li><strong>Seamless Interoperability:</strong> Robust integration with existing EHRs and lab systems.</li>
+                    </ul>
+                </div>
+            </div>
+        </section>
+        
+        <section id="architecture" class="content-section">
+            <h1 class="text-3xl md:text-4xl font-bold text-gray-900 mb-4">System Architecture & Tech Stack</h1>
+            <p class="text-lg text-gray-600 mb-8">MediTrack employs a modular, microservices-oriented architecture to ensure scalability and resilience. The technology stack is carefully chosen to support high performance, security, and a rich user experience. Click on the components below to see their role in the system.</p>
+
+            <div class="card p-6 md:p-8">
+                <div class="relative flex flex-col md:flex-row items-center justify-around text-center gap-8 md:gap-4">
+                    <div id="frontend-node" class="tech-node w-48 p-4 border-2 border-blue-500 rounded-lg bg-blue-50 z-10">
+                        <h3 class="font-bold text-lg">Frontend</h3>
+                        <p class="text-sm">React.js</p>
+                    </div>
+                    <div class="w-px h-16 md:h-px md:w-32 bg-gray-400"></div>
+                    <div id="backend-node" class="tech-node w-48 p-4 border-2 border-green-500 rounded-lg bg-green-50 z-10">
+                        <h3 class="font-bold text-lg">Backend API</h3>
+                        <p class="text-sm">FastAPI (Python)</p>
+                    </div>
+                    <div class="w-px h-16 md:h-px md:w-32 bg-gray-400"></div>
+                     <div class="flex flex-col gap-4 z-10">
+                        <div id="db-sql-node" class="tech-node w-48 p-4 border-2 border-purple-500 rounded-lg bg-purple-50">
+                            <h3 class="font-bold text-lg">Structured Data</h3>
+                            <p class="text-sm">PostgreSQL</p>
+                        </div>
+                        <div id="db-nosql-node" class="tech-node w-48 p-4 border-2 border-orange-500 rounded-lg bg-orange-50">
+                            <h3 class="font-bold text-lg">Monitoring Data</h3>
+                            <p class="text-sm">MongoDB / NoSQL</p>
+                        </div>
+                    </div>
+                </div>
+
+                <div id="tech-info-box" class="mt-8 p-4 bg-gray-100 rounded-lg text-gray-800 min-h-[100px] flex items-center justify-center">
+                    <p class="text-center">Click a component to learn more.</p>
+                </div>
+            </div>
+        </section>
+
+        <section id="ux" class="content-section">
+            <h1 class="text-3xl md:text-4xl font-bold text-gray-900 mb-4">User-Centric Experience (UX)</h1>
+             <p class="text-lg text-gray-600 mb-8">In healthcare, UX is not just about aesthetics—it's about patient safety and clinical efficiency. MediTrack's design prioritizes clarity, accessibility, and minimizing cognitive load for all users, from clinicians to patients.</p>
+             <div class="grid md:grid-cols-2 lg:grid-cols-3 gap-6">
+                <div class="card p-6">
+                    <h3 class="font-bold text-xl mb-2">♿ Accessibility-First</h3>
+                    <p>Ensuring usability for everyone, including users with disabilities, through high contrast, screen reader compatibility, and keyboard navigation.</p>
+                </div>
+                <div class="card p-6">
+                    <h3 class="font-bold text-xl mb-2">🧠 Minimized Cognitive Load</h3>
+                    <p>Presenting critical data upfront with a simple information hierarchy. Smart defaults and auto-save features reduce manual effort for clinicians.</p>
+                </div>
+                 <div class="card p-6">
+                    <h3 class="font-bold text-xl mb-2">🤖 AI-Powered Predictive UX</h3>
+                    <p>The interface dynamically adapts based on patient condition or clinician needs, highlighting relevant data and suggesting actions based on AI insights.</p>
+                </div>
+                 <div class="card p-6">
+                    <h3 class="font-bold text-xl mb-2">🏠 Human-Centered Telehealth</h3>
+                    <p>Seamless appointment scheduling, one-click rescheduling, and video interfaces optimized for low-bandwidth connections.</p>
+                </div>
+                 <div class="card p-6">
+                    <h3 class="font-bold text-xl mb-2">🔗 Intuitive EHR Integration</h3>
+                    <p>Allows clinicians to access, update, and review patient records within a single interface, eliminating the need to switch systems.</p>
+                </div>
+                 <div class="card p-6">
+                    <h3 class="font-bold text-xl mb-2">🎯 Task-Oriented Dashboards</h3>
+                    <p>Dashboards prioritize critical actions based on user roles, such as highlighting pending lab results and urgent alerts for a doctor.</p>
+                </div>
+             </div>
+        </section>
+
+        <section id="datasecurity" class="content-section">
+            <h1 class="text-3xl md:text-4xl font-bold text-gray-900 mb-4">Data Management, Security & Interoperability</h1>
+            <p class="text-lg text-gray-600 mb-8">MediTrack's foundation is built on secure, compliant, and interoperable data management. This section details the multi-layered approach to protecting patient information and ensuring seamless integration with the broader healthcare ecosystem.</p>
+
+            <div class="grid lg:grid-cols-2 gap-8">
+                <div class="card p-6">
+                    <h2 class="text-2xl font-bold mb-4">Security & Compliance</h2>
+                    <p class="mb-4">Adherence to HIPAA, GDPR, and HITECH standards is non-negotiable. Key measures include:</p>
+                    <ul class="space-y-2 list-disc list-inside">
+                        <li><strong>End-to-End Encryption:</strong> All data is encrypted at rest (AES-256) and in transit (TLS 1.3).</li>
+                        <li><strong>Multi-Factor Authentication (MFA):</strong> Deployed for all users to prevent unauthorized access.</li>
+                        <li><strong>Regular Audits:</strong> Frequent security reviews and risk assessments to identify vulnerabilities.</li>
+                        <li><strong>Immutable Backups:</strong> To protect against data loss and ransomware.</li>
+                    </ul>
+                </div>
+
+                <div class="card p-6">
+                    <h2 class="text-2xl font-bold mb-4">Role-Based Access Control (RBAC)</h2>
+                    <p class="mb-4">Access to Protected Health Information (PHI) is strictly limited based on job function. This ensures users only see the data necessary for their role.</p>
+                    <div class="overflow-x-auto">
+                        <table class="w-full text-left">
+                            <thead class="bg-gray-100">
+                                <tr>
+                                    <th class="p-3 font-semibold">Access Tier</th>
+                                    <th class="p-3 font-semibold">Roles</th>
+                                    <th class="p-3 font-semibold">Scope</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                <tr class="border-b hover:bg-gray-50">
+                                    <td class="p-3 font-medium text-red-600">Full</td>
+                                    <td class="p-3">Security Officers, CMIO</td>
+                                    <td class="p-3">Full system access</td>
+                                </tr>
+                                <tr class="border-b hover:bg-gray-50">
+                                    <td class="p-3 font-medium text-orange-600">Department</td>
+                                    <td class="p-3">Attending Physicians</td>
+                                    <td class="p-3">Unit-specific patient data</td>
+                                </tr>
+                                <tr class="border-b hover:bg-gray-50">
+                                    <td class="p-3 font-medium text-yellow-600">Patient</td>
+                                    <td class="p-3">Nurses, Specialists</td>
+                                    <td class="p-3">Individual patient cases</td>
+                                </tr>
+                                <tr class="hover:bg-gray-50">
+                                    <td class="p-3 font-medium text-green-600">Limited</td>
+                                    <td class="p-3">Admin Staff, Patients</td>
+                                    <td class="p-3">Their own records</td>
+                                </tr>
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+
+                <div class="card p-6 lg:col-span-2">
+                    <h2 class="text-2xl font-bold mb-4">Interoperability: FHIR vs. HL7</h2>
+                    <p class="mb-6">MediTrack uses a hybrid strategy, leveraging modern FHIR for app-based workflows and HL7 for legacy system compatibility. This ensures broad integration capabilities.</p>
+                     <div class="grid md:grid-cols-2 gap-6">
+                         <div class="border border-gray-200 rounded-lg p-4">
+                            <h3 class="font-bold text-xl text-blue-700">FHIR</h3>
+                            <p class="text-sm font-medium text-gray-500 mb-2">Fast Healthcare Interoperability Resources</p>
+                            <ul class="space-y-1 list-disc list-inside text-sm">
+                                <li><strong>Use Case:</strong> Modern app-based workflows</li>
+                                <li><strong>Mechanism:</strong> RESTful APIs</li>
+                                <li><strong>Format:</strong> JSON/XML</li>
+                                <li><strong>Strength:</strong> Real-time access, developer-friendly</li>
+                            </ul>
+                         </div>
+                         <div class="border border-gray-200 rounded-lg p-4">
+                            <h3 class="font-bold text-xl text-green-700">HL7</h3>
+                            <p class="text-sm font-medium text-gray-500 mb-2">Health Level Seven</p>
+                            <ul class="space-y-1 list-disc list-inside text-sm">
+                                <li><strong>Use Case:</strong> Legacy system compatibility</li>
+                                <li><strong>Mechanism:</strong> Message-based exchange</li>
+                                <li><strong>Format:</strong> ASCII/XML</li>
+                                <li><strong>Strength:</strong> Wide adoption in traditional EHRs</li>
+                            </ul>
+                         </div>
+                     </div>
+                </div>
+            </div>
+        </section>
+        
+        <section id="analytics" class="content-section">
+             <h1 class="text-3xl md:text-4xl font-bold text-gray-900 mb-4">Advanced Analytics & AI Capabilities</h1>
+             <p class="text-lg text-gray-600 mb-8">MediTrack integrates Machine Learning (ML) to transform healthcare from a reactive to a proactive model. This allows for early disease detection, optimized resource allocation, and personalized treatment plans. The chart below shows the projected impact of key AI features.</p>
+
+            <div class="card p-6">
+                <h2 class="text-2xl font-bold mb-4 text-center">Projected Impact of AI/ML Features</h2>
+                <div class="chart-container">
+                    <canvas id="analyticsChart"></canvas>
+                </div>
+                 <p class="text-sm text-center text-gray-500 mt-4">This chart visualizes the qualitative impact of AI on various healthcare domains, from high-impact early disease alerts to significant efficiency gains in resource forecasting.</p>
+            </div>
+        </section>
+
+        <section id="features" class="content-section">
+             <h1 class="text-3xl md:text-4xl font-bold text-gray-900 mb-4">Core System Features</h1>
+             <p class="text-lg text-gray-600 mb-8">MediTrack is more than a records system; it's a suite of integrated tools designed to improve workflows, enhance patient safety, and provide data-driven insights. Here are some of the standout features that define the platform.</p>
+             <div class="grid md:grid-cols-2 lg:grid-cols-3 gap-6">
+                <div class="card p-6">
+                    <h3 class="font-bold text-xl mb-2">📈 Vitals Monitoring Dashboard</h3>
+                    <p>Real-time visualization of patient vitals (BP, heart rate, etc.) with customizable alerts for readings that fall outside of normal ranges.</p>
+                </div>
+                <div class="card p-6">
+                    <h3 class="font-bold text-xl mb-2">📂 Patient Profile & History</h3>
+                    <p>A complete, chronological medical record for each patient, including diagnoses, prescriptions, lab results, and notes.</p>
+                </div>
+                 <div class="card p-6">
+                    <h3 class="font-bold text-xl mb-2">💬 Secure Internal Chat</h3>
+                    <p>A HIPAA-compliant messaging module for instant one-on-one and group communication between medical staff, reducing errors.</p>
+                </div>
+                 <div class="card p-6">
+                    <h3 class="font-bold text-xl mb-2">🔍 Smart Search</h3>
+                    <p>Powerful search functionality that allows clinicians to quickly find patient data, lab reports, or specific notes across the entire system.</p>
+                </div>
+                 <div class="card p-6">
+                    <h3 class="font-bold text-xl mb-2">📅 Appointment Management</h3>
+                    <p>An integrated calendar for scheduling patient appointments, tracking follow-ups, and sending automated reminders.</p>
+                </div>
+                 <div class="card p-6">
+                    <h3 class="font-bold text-xl mb-2">📄 Report Upload & Storage</h3>
+                    <p>Ability to upload and securely store scanned lab reports, images, and other medical documents directly to a patient's profile.</p>
+                </div>
+             </div>
+        </section>
+    </main>
+    
+    <footer class="text-center py-6 mt-8 border-t">
+        <p class="text-gray-500">&copy; 2025 MediTrack Systems. All rights reserved.</p>
+    </footer>
+
+    <script>
+        document.addEventListener('DOMContentLoaded', function() {
+            const navLinks = document.querySelectorAll('.nav-link');
+            const mobileNav = document.getElementById('mobile-nav');
+            const contentSections = document.querySelectorAll('.content-section');
+            let analyticsChartInstance = null;
+        
+            const techInfo = {
+                'frontend-node': '<strong>React.js:</strong> Chosen for its component-based architecture, which allows for the creation of complex, interactive user interfaces like dynamic dashboards and patient portals. Its vast ecosystem supports rapid development.',
+                'backend-node': '<strong>FastAPI (Python):</strong> Selected for its high performance and asynchronous capabilities, crucial for handling real-time data from monitoring devices. It auto-generates API documentation, simplifying integration.',
+                'db-sql-node': '<strong>PostgreSQL (Relational):</strong> Used for structured data like patient demographics and medical history. It ensures data integrity, consistency, and reliability, which are critical for medical records.',
+                'db-nosql-node': '<strong>MongoDB (NoSQL):</strong> Used for high-volume, real-time monitoring data. Its flexible schema and high write throughput are ideal for handling continuous streams of sensor data from IoT devices.'
+            };
+            const techInfoBox = document.getElementById('tech-info-box');
+
+            function navigateTo(hash) {
+                if (!hash) return;
+        
+                contentSections.forEach(section => {
+                    section.classList.remove('active');
+                });
+        
+                const activeSection = document.querySelector(hash);
+                if (activeSection) {
+                    activeSection.classList.add('active');
+                    
+                    if (hash === '#analytics' && !analyticsChartInstance) {
+                        renderAnalyticsChart();
+                    }
+                }
+        
+                navLinks.forEach(link => {
+                    link.classList.toggle('active', link.hash === hash);
+                });
+
+                if(mobileNav.value !== hash) {
+                    mobileNav.value = hash;
+                }
+            }
+        
+            navLinks.forEach(link => {
+                link.addEventListener('click', function(e) {
+                    e.preventDefault();
+                    window.location.hash = this.hash;
+                });
+            });
+
+            mobileNav.addEventListener('change', function(e) {
+                window.location.hash = this.value;
+            });
+        
+            window.addEventListener('hashchange', () => navigateTo(window.location.hash));
+            
+            navigateTo(window.location.hash || '#overview');
+
+            document.querySelectorAll('.tech-node').forEach(node => {
+                node.addEventListener('click', () => {
+                    techInfoBox.innerHTML = techInfo[node.id];
+                });
+            });
+
+            function renderAnalyticsChart() {
+                const ctx = document.getElementById('analyticsChart').getContext('2d');
+                const chartData = {
+                    labels: [
+                        'Early Disease Alerts',
+                        'Resource Forecasting',
+                        'Predicting Readmissions',
+                        'Adaptive Treatment Plans',
+                        'Diagnosis Support (LLMs)',
+                        'Public Health Surveillance'
+                    ],
+                    datasets: [{
+                        label: 'Projected Impact Level',
+                        data: [95, 85, 80, 90, 75, 70],
+                        backgroundColor: [
+                            'rgba(255, 99, 132, 0.6)',
+                            'rgba(54, 162, 235, 0.6)',
+                            'rgba(255, 206, 86, 0.6)',
+                            'rgba(75, 192, 192, 0.6)',
+                            'rgba(153, 102, 255, 0.6)',
+                            'rgba(255, 159, 64, 0.6)'
+                        ],
+                        borderColor: [
+                            'rgba(255, 99, 132, 1)',
+                            'rgba(54, 162, 235, 1)',
+                            'rgba(255, 206, 86, 1)',
+                            'rgba(75, 192, 192, 1)',
+                            'rgba(153, 102, 255, 1)',
+                            'rgba(255, 159, 64, 1)'
+                        ],
+                        borderWidth: 1
+                    }]
+                };
+
+                const chartOptions = {
+                    indexAxis: 'y',
+                    responsive: true,
+                    maintainAspectRatio: false,
+                    plugins: {
+                        legend: {
+                            display: false
+                        },
+                        tooltip: {
+                            callbacks: {
+                                label: function(context) {
+                                    let label = context.dataset.label || '';
+                                    if (label) {
+                                        label += ': ';
+                                    }
+                                    if (context.parsed.x !== null) {
+                                        label += context.parsed.x + ' (Qualitative Score)';
+                                    }
+                                    return label;
+                                }
+                            }
+                        }
+                    },
+                    scales: {
+                        x: {
+                            beginAtZero: true,
+                            max: 100,
+                             title: {
+                                display: true,
+                                text: 'Impact Score (Qualitative)'
+                            }
+                        }
+                    }
+                };
+
+                analyticsChartInstance = new Chart(ctx, {
+                    type: 'bar',
+                    data: chartData,
+                    options: chartOptions,
+                });
+            }
+        });
+    </script>
+</body>
+</html>
