@@ -1,6 +1,7 @@
 from motor.motor_asyncio import AsyncIOMotorClient
 from app.config.settings import settings
 import logging
+from datetime import datetime
 
 logger = logging.getLogger(__name__)
 
@@ -10,9 +11,65 @@ class Database:
 
 db = Database()
 
+# Get current time as string for demo data
+now = datetime.utcnow().isoformat()
+
+# Demo users for testing
+demo_users = [
+    {
+        "_id": "1",
+        "username": "admin",
+        "email": "admin@meditrack.com",
+        "password_hash": "$2b$12$QgEzpNpFI3foQCpXrEpaZuwWFjfOQY.uPmzBHaFrBhcgcyscu3zmO",  # admin123
+        "role": "admin",
+        "profile": {
+            "firstName": "Admin",
+            "lastName": "User",
+            "title": "System Administrator"
+        },
+        "isActive": True,
+        "lastLogin": None,
+        "createdAt": now
+    },
+    {
+        "_id": "2",
+        "username": "doctor",
+        "email": "doctor@meditrack.com",
+        "password_hash": "$2b$12$kIvRvrTonbEt4nPOyAezG.t2E/HQbj.2LYk0VHbsHA65P8M1wQeMi",  # doctor123
+        "role": "doctor",
+        "profile": {
+            "firstName": "Dr. John",
+            "lastName": "Smith",
+            "title": "Cardiologist",
+            "specialization": "Cardiology",
+            "licenseNumber": "MD123456"
+        },
+        "isActive": True,
+        "lastLogin": None,
+        "createdAt": now
+    },
+    {
+        "_id": "3",
+        "username": "nurse",
+        "email": "nurse@meditrack.com",
+        "password_hash": "$2b$12$He.SGA6aikcEhSEFMGahzeIt2tZ7/aIm9NkNoN.Hhgs.TwIsPeIzy",  # nurse123
+        "role": "nurse",
+        "profile": {
+            "firstName": "Jane",
+            "lastName": "Doe",
+            "title": "Registered Nurse",
+            "department": "Emergency",
+            "licenseNumber": "RN789012"
+        },
+        "isActive": True,
+        "lastLogin": None,
+        "createdAt": now
+    }
+]
+
 # Simple in-memory database for demo (fallback when MongoDB is not available)
 mock_database = {
-    "users": [],
+    "users": demo_users.copy(),  # Initialize with demo users
     "patients": [],
     "vitals": [],
     "appointments": [],
@@ -73,6 +130,17 @@ class MockCollection:
             doc_id = str(query["_id"])
             for doc in self.data:
                 if str(doc.get("_id")) == doc_id:
+                    return doc
+        elif "$or" in query:
+            # Handle $or queries (for login)
+            for doc in self.data:
+                for condition in query["$or"]:
+                    if all(doc.get(key) == value for key, value in condition.items()):
+                        return doc
+        else:
+            # Handle simple field queries
+            for doc in self.data:
+                if all(doc.get(key) == value for key, value in query.items()):
                     return doc
         return None
     

@@ -11,10 +11,17 @@ logger = logging.getLogger(__name__)
 router = APIRouter()
 oauth2_scheme = OAuth2PasswordBearer(tokenUrl="token")
 
+@router.get("/test")
+async def test_endpoint():
+    """Simple test endpoint"""
+    return {"message": "Auth router is working"}
+
 @router.post("/login", response_model=Token)
 async def login(form_data: OAuth2PasswordRequestForm = Depends(), db=Depends(get_database)):
     """User login endpoint"""
     try:
+        logger.info(f"Login attempt for username: {form_data.username}")
+        
         # Find user by username or email
         user_doc = await db.users.find_one({
             "$or": [
@@ -23,11 +30,17 @@ async def login(form_data: OAuth2PasswordRequestForm = Depends(), db=Depends(get
             ]
         })
         
+        logger.info(f"User found: {user_doc is not None}")
+        
         if not user_doc:
             raise HTTPException(
                 status_code=status.HTTP_401_UNAUTHORIZED,
                 detail="Incorrect username or password"
             )
+        
+        logger.info(f"Creating User object from doc")
+        user = User(**user_doc)
+        logger.info(f"User object created successfully")
         
         user = User(**user_doc)
         
